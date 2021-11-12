@@ -2,6 +2,7 @@ import datetime
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from service.models import Acceptation
 
 
 class Guest(AbstractUser):
@@ -23,7 +24,7 @@ class Restaurant(models.Model):
     area = models.CharField(max_length=50)                                              # 동
     waiting_avg = models.IntegerField()                                                 # 평균 대기 시간
     menu = models.ImageField(upload_to=f'menu/%Y/%m/%d', blank=True, null=True)         # 메뉴 사진
-    restaurnat_photo = models.ImageField(upload_to=f'restaurant/%Y/%m/%d', blank=True)  # 식당 사진
+    restaurant_photo = models.ImageField(upload_to=f'restaurant/%Y/%m/%d', blank=True)  # 식당 사진
     is_host = models.BooleanField(default=False)                                        # 호스트인지
     acceptation = models.ManyToManyField(Acceptation, blank=True)                       # 고객 입장 여부를 위해
     # density
