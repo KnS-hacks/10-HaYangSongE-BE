@@ -7,11 +7,11 @@ class Review(models.Model):
 
 
 class Waiting(models.Model):
-    restaurant = models.ForeignKey('Restaurant', on_delete=models.CASCADE)
-    leader = models.OneToOneField('Guest',
+    restaurant = models.ForeignKey('account.Restaurant', on_delete=models.CASCADE)
+    leader = models.OneToOneField('account.Guest',
                                   on_delete=models.CASCADE,
                                   related_name='leader')
-    member = models.ManyToManyField('Guest',
+    member = models.ManyToManyField('account.Guest',
                                     related_name='member')
 
 
