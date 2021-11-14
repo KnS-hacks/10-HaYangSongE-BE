@@ -155,3 +155,5 @@ cython_debug/
 vacstage/bin/
 vacstage/lib/
 vacstage/pyvenv.cfg
+/account/migrations/
+/service/migrations/
