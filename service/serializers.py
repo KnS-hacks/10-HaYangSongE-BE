@@ -14,7 +14,8 @@ class WaitingSerializer(serializers.ModelSerializer):
 
 
 class AcceptationSerializer(serializers.ModelSerializer):
-    waiting = serializers.PrimaryKeyRelatedField(many=True)
+    waiting = serializers.PrimaryKeyRelatedField(many=True,
+                                                 queryset=Waiting.objects.all())
 
     class Meta:
         model = Acceptation

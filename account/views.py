@@ -12,7 +12,7 @@ class GuestList(generics.ListCreateAPIView):
     queryset = Guest.objects.all()
     serializer_class = GuestSerializer
     filter_backends = [filters.SearchFilter]
-    serch_fields = ['username']
+    search_fields = ['username']
     permission_classes = []
 
     def perform_create(self, serializer):
