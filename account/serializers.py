@@ -7,7 +7,6 @@ from account.models import Guest, Restaurant
 
 class GuestSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    friends = serializers.StringRelatedField(many=True)
     vaccine_elapsed = serializers.SerializerMethodField()
 
     @staticmethod
@@ -22,8 +21,8 @@ class GuestSerializer(serializers.ModelSerializer):
         model = Guest
         fields = ['username', 'vaccine_step',
                   'vaccine_elapsed', 'email',
-                  'password', 'photo', 'phone_number',
-                  'is_staff', 'friends']
+                  'password', 'phone_number',
+                  'is_staff']
 
 
 class RestaurantSerializer(serializers.ModelSerializer):
