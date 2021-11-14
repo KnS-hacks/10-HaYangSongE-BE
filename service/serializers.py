@@ -1,11 +1,12 @@
 from rest_framework import serializers
 
 from service.models import Waiting, Acceptation
+from account.serializers import GuestSerializer
 
 
 class WaitingSerializer(serializers.ModelSerializer):
     leader = serializers.StringRelatedField()
-    # member = GuestSerializer(many=True)
+    member = GuestSerializer(many=True)
 
     class Meta:
         model = Waiting
