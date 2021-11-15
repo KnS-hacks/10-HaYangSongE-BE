@@ -13,6 +13,8 @@ class Waiting(models.Model):
                                   related_name='leader')
     member = models.ManyToManyField('account.Guest',
                                     related_name='member')
+    accepted = models.BooleanField(default=False)
+    date = models.DateTimeField(auto_now=True)
 
 
 class Acceptation(models.Model):
