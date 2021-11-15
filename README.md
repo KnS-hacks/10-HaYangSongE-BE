@@ -51,3 +51,6 @@ git branch [Name]
 `
 git merge [Name]
 `
+
+## API 명세서
+https://www.notion.so/API-2b18be0c61c3464e996b991676b87c82
