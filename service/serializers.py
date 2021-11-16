@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from service.models import Waiting, Acceptation
-from account.serializers import GuestSerializer
 from account.models import Guest
 
 
