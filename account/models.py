@@ -56,7 +56,7 @@ class Restaurant(models.Model):
     restaurant_photo = models.ImageField(upload_to=f'restaurant/%Y/%m/%d', blank=True)  # 식당 사진
     is_host = models.BooleanField(default=False)                                        # 호스트인지
     acceptation = models.ManyToManyField(Acceptation, blank=True)                       # 고객 입장 여부를 위해
-    waitings = models.ManyToManyField('Waiting', related_name='waitings', blank=True)   # 관련 웨이팅들
+    waitings = models.ManyToManyField('service.Waiting', related_name='waitings', blank=True)   # 관련 웨이팅들
     # density
     total_seat = models.IntegerField()                                                  # 수용 가능 인원
     remain_seat = models.IntegerField()                                                 # 입장 가능 인원
