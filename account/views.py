@@ -1,12 +1,13 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework import generics, permissions, filters
+from rest_framework import generics, permissions, filters, status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
 
 from account.models import Guest, Restaurant
 from account.permissions import IsHostOrReadOnly
-from account.serializers import GuestSerializer, RestaurantSerializer
+from account.serializers import GuestSerializer, RestaurantSerializer, GuestLoginSerializer
 
 
 class GuestList(generics.ListCreateAPIView):
@@ -53,4 +54,19 @@ class RestaurantDetail(generics.RetrieveUpdateAPIView):
     serializer_class = RestaurantSerializer
     permission_classes = [permissions.IsAuthenticated,
                           IsHostOrReadOnly]
+
+
+@api_view(['POST'])
+def login(request):
+    if request.method == 'POST':
+        serializer = GuestLoginSerializer(data=request.data)
+        if not serializer.is_valid(raise_exception=True):
+            return Response({"message": "Request Body Error."}, status=status.HTTP_409_CONFLICT)
+        response = {
+            'success': 'True',
+            'username': serializer.data['username'],
+            'token': serializer.data['token']
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
 
