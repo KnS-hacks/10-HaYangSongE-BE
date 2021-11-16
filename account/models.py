@@ -50,7 +50,7 @@ class Restaurant(models.Model):
     phone_number = models.CharField(max_length=64)                                      # 지점 전화 번호
     branch_name = models.CharField(max_length=64)                                       # 지점명
     district = models.CharField(max_length=2, choices=DISTRICTS)                        # 구
-    area = models.CharField(max_length=2, choices=AREA)                                              # 동
+    area = models.CharField(max_length=2, choices=AREA)                                 # 동
     waiting_avg = models.PositiveIntegerField()                                         # 평균 대기 시간
     menu = models.ImageField(upload_to=f'menu/%Y/%m/%d', blank=True, null=True)         # 메뉴 사진
     restaurant_photo = models.ImageField(upload_to=f'restaurant/%Y/%m/%d', blank=True)  # 식당 사진
