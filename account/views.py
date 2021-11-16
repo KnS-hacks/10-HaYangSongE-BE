@@ -5,6 +5,7 @@ from rest_framework import generics, permissions, filters
 from rest_framework.decorators import api_view, permission_classes
 
 from account.models import Guest, Restaurant
+from account.permissions import IsHostOrReadOnly
 from account.serializers import GuestSerializer, RestaurantSerializer
 
 
@@ -31,18 +32,25 @@ class GuestDetailPK(generics.RetrieveUpdateAPIView):
     serializer_class = GuestSerializer
 
 
-class RestaurantList(generics.ListAPIView):
+class RestaurantList(generics.ListCreateAPIView):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['phone_number', 'branch_name',
-                     'district', 'area']
+    permission_classes = [permissions.IsAuthenticated, IsHostOrReadOnly]
 
-    def perform_create(self, serializer):
-        serializer.save()
+    def get_queryset(self):
+        queryset = Restaurant.objects.all()
+        district = self.request.query_params.get('district', None)
+        key = self.request.query_params.get('key', None)
+        if district is not None:
+            queryset = queryset.filter(district=district)
+        if key is not None:
+            queryset = queryset.filter(branch_name__contains=key)
+        return queryset
 
 
 class RestaurantDetail(generics.RetrieveUpdateAPIView):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated,
+                          IsHostOrReadOnly]
+
