@@ -19,11 +19,16 @@ class GuestList(generics.ListCreateAPIView):
         serializer.save()
 
 
-class GuestDetail(generics.RetrieveUpdateAPIView):
+class GuestDetailUN(generics.RetrieveUpdateAPIView):
     queryset = Guest.objects.all()
     serializer_class = GuestSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     lookup_field = 'username'
+
+
+class GuestDetailPK(generics.RetrieveUpdateAPIView):
+    queryset = Guest.objects.all()
+    serializer_class = GuestSerializer
 
 
 class RestaurantList(generics.ListAPIView):
