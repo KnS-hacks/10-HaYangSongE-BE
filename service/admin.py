@@ -3,6 +3,6 @@ from service.models import *
 
 
 # Register your models here.
-admin.register(Review)
-admin.register(Waiting)
-admin.register(Acceptation)
+admin.site.register(Review)
+admin.site.register(Waiting)
+admin.site.register(Acceptation)
