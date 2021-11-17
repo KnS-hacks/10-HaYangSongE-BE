@@ -42,7 +42,7 @@ git push [remote] [branch]
 
 `git pull [remote] [branch]`  
 
-## Control Branch
+### Control Branch
 
 `
 git branch [Name]
@@ -52,5 +52,19 @@ git branch [Name]
 git merge [Name]
 `
 
+## Local Test
+
+```bash
+git clone https://github.com/KnS-hacks/10-HaYangSongE-BE
+
+가상환경 ~
+
+pip install -r requirements.dev.txt
+
+python manage.py makemigrations
+
+python manage.py migrate
+```
+
 ## API 명세서
-https://www.notion.so/API-2b18be0c61c3464e996b991676b87c82
+[NOTION](https://www.notion.so/API-2b18be0c61c3464e996b991676b87c82)
