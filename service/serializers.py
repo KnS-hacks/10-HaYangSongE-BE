@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
+import datetime
 from service.models import Waiting, Acceptation
 from account.models import Guest
+from django.utils.timezone import utc
 
 
 class WaitingSerializer(serializers.ModelSerializer):
@@ -41,7 +43,10 @@ class WaitingSerializer(serializers.ModelSerializer):
     def get_order(obj):
         if obj.accepted:
             return 0
-        query = Waiting.objects.filter(date__lte=obj.date).\
+        now = datetime.datetime.utcnow().replace(tzinfo=utc).date()
+        query = Waiting.objects.\
+            filter(date__day=obj.date).\
+            filter(date__lte=obj.date).\
             filter(accepted=False)
         return len(query)
 
