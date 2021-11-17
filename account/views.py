@@ -15,7 +15,7 @@ class GuestList(generics.ListCreateAPIView):
     serializer_class = GuestSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['username']
-    permission_classes = []
+    # permission_classes = []
 
     def perform_create(self, serializer):
         serializer.save()
@@ -24,7 +24,7 @@ class GuestList(generics.ListCreateAPIView):
 class GuestDetailUN(generics.RetrieveUpdateAPIView):
     queryset = Guest.objects.all()
     serializer_class = GuestSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     lookup_field = 'username'
 
 
@@ -36,7 +36,7 @@ class GuestDetailPK(generics.RetrieveUpdateAPIView):
 class RestaurantList(generics.ListCreateAPIView):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
-    permission_classes = [permissions.IsAuthenticated, IsHostOrReadOnly]
+    # permission_classes = [permissions.IsAuthenticated, IsHostOrReadOnly]
 
     def get_queryset(self):
         queryset = Restaurant.objects.all()
@@ -52,8 +52,8 @@ class RestaurantList(generics.ListCreateAPIView):
 class RestaurantDetail(generics.RetrieveUpdateAPIView):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          IsHostOrReadOnly]
+    # permission_classes = [permissions.IsAuthenticated,
+    #                       IsHostOrReadOnly]
 
 
 @api_view(['POST'])

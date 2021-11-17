@@ -24,7 +24,7 @@ class WaitingDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([permissions.IsAuthenticated, IsHostOrReadOnly])
+# @permission_classes([permissions.IsAuthenticated, IsHostOrReadOnly])
 def accept_waiting(request, restaurant_pk):
     now = datetime.datetime.utcnow().replace(tzinfo=utc).date()
     if request.method == 'GET':
