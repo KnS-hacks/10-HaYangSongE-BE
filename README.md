@@ -68,3 +68,5 @@ python manage.py migrate
 
 ## API 명세서
 [NOTION](https://www.notion.so/API-2b18be0c61c3464e996b991676b87c82)
+
+[Postman](https://www.postman.com/bold-satellite-818814/workspace/vacstage/overview)
