@@ -20,7 +20,7 @@ class WaitingSerializer(serializers.ModelSerializer):
                                          restaurant_id=restaurant_.pk)
         if leader.vaccine_step < restaurant_.vaccine_condition:
             raise serializers.ValidationError(
-                '백신 조건이 맞지않습니다.'
+                {"message": "백신 조건이 맞지않습니다."}
             )
         try:
             for member_ in members:
