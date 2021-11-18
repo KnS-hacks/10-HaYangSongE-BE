@@ -10,8 +10,6 @@ class Guest(AbstractUser):
     vaccine_step = models.IntegerField(default=0)                                                       # 백신 접종 단계
     vaccine_date = models.DateField(null=True)                                                          # 백신 접종 일자
     phone_number = models.CharField(max_length=50, default="")                                          # 고객 휴대폰 번호
-    friends = models.ManyToManyField("Guest", blank=True, related_name='friend_list')                   # 친구 목록 (시간이 남는다면 구현)
-    friend_request_list = models.ManyToManyField("Guest", blank=True, related_name='friend_request')    # 친구 요청 목록 (시간이 남는다면 구현)
     is_host = models.BooleanField(default=False)
 
     def __str__(self):
