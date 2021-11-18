@@ -13,7 +13,6 @@ JWT_ENCODE_HANDLER = api_settings.JWT_ENCODE_HANDLER
 class GuestSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField()
     password = serializers.CharField(write_only=True)
-    friends = serializers.StringRelatedField(many=True)
     vaccine_elapsed = serializers.SerializerMethodField()
     is_host = serializers.BooleanField(read_only=True)
 
@@ -30,7 +29,7 @@ class GuestSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'full_name', 'vaccine_step',
                   'vaccine_elapsed', 'email', 'vaccine_date',
                   'password', 'phone_number',
-                  'is_staff', 'friends', 'is_host']
+                  'is_staff', 'is_host']
 
 
 class GuestLoginSerializer(serializers.Serializer):
