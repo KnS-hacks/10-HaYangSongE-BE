@@ -4,6 +4,7 @@ from django.shortcuts import render
 from rest_framework import generics, permissions, filters, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from django.views.decorators.csrf import csrf_exempt
 
 from account.models import Guest, Restaurant
 from account.permissions import IsHostOrReadOnly
@@ -55,7 +56,7 @@ class RestaurantDetail(generics.RetrieveUpdateAPIView):
     # permission_classes = [permissions.IsAuthenticated,
     #                       IsHostOrReadOnly]
 
-
+@csrf_exempt
 @api_view(['POST'])
 def login(request):
     if request.method == 'POST':
