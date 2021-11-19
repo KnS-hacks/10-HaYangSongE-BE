@@ -158,7 +158,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
         fields = ['id', 'name', 'host', 'phone_number', 'branch_name', 'district', 'area',
-                  'waiting_avg', 'total_seat', 'remain_seat', 'menu',
+                  'waiting_avg', 'total_seat', 'remain_seat', 'menu', 'restaurant_photo',
                   'waitings', 'acceptation', 'vaccine_condition', 'SE', 'WN']
 
     def create(self, validated_data):
