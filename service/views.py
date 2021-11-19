@@ -148,10 +148,8 @@ def accept_waiting(request, restaurant_pk):
                 'message': {
                     'to': '01037065337',
                     'from': '01077530901',
-                    'text': f'''안녕하세요. VAC STAGE입니다.
-        {next_waiting.leader} 님이 예약하신 "{restaurant}" 대기 순서 문자 보내드립니다.
-        {restaurant.waiting_avg}분 뒤 입장 예정이오니, 음식 점 앞에 대기 부탁드립니다.
-        감사합니다!'''
+                    'text': f'안녕하세요. VAC STAGE입니다. \
+        {next_waiting.leader} 님이 예약하신 "{restaurant}" 대기 순서 문자 보내드립니다. {restaurant.waiting_avg}분 뒤 입장 예정이오니, 음식 점 앞에 대기 부탁드립니다. 감사합니다!'
                 }
             }
         res = requests.post(getUrl('/messages/v4/send'),
