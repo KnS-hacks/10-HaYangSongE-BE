@@ -117,7 +117,11 @@ def accept_waiting(request, restaurant_pk):
         serializer = AcceptationSerializer(data=acceptation)
         if serializer.is_valid():
             serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "success": True
+            }, status=status.HTTP_201_CREATED
+        )
 
 
 @csrf_exempt
