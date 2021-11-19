@@ -59,6 +59,8 @@ git clone https://github.com/KnS-hacks/10-HaYangSongE-BE
 
 가상환경 ~
 
+pip install --upgrade pip
+
 pip install -r requirements.dev.txt
 
 python manage.py makemigrations
