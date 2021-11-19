@@ -117,8 +117,7 @@ class WaitingSerializer(serializers.ModelSerializer):
         if obj.accepted:
             return 0
         now = datetime.datetime.utcnow().replace(tzinfo=utc).date()
-        query = Waiting.objects.filter(date__lte=obj.date).\
-            filter(accepted=False)
+        query = Waiting.objects.filter(date__lte=obj.date).filter(accepted=False)
         return len(query)
 
     class Meta:
