@@ -1,3 +1,4 @@
+import requests
 
 from django.db.models import Q
 from django.shortcuts import render
@@ -79,7 +80,10 @@ def login(request):
     if request.method == 'POST':
         serializer = GuestLoginSerializer(data=request.data)
         if not serializer.is_valid(raise_exception=True):
-            return Response({"message": "Request Body Error."}, status=status.HTTP_409_CONFLICT)
+            response = {
+                'success': False,
+            }
+            return Response(response, status=status.HTTP_200_OK)
         response = {
             'success': True,
             'username': serializer.data['username'],
