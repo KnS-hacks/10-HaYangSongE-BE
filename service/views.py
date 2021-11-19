@@ -1,4 +1,5 @@
 import datetime
+import json
 
 import requests
 
@@ -20,6 +21,9 @@ from service.serializers import AcceptationSerializer, GuestLoginSerializer
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.parsers import JSONParser
+
+# from auth import *
+# from config import *
 
 
 class GuestList(generics.ListCreateAPIView):
@@ -176,6 +180,22 @@ def waiting(request):
         now = datetime.datetime.utcnow().replace(tzinfo=utc).date()
         query = Waiting.objects.filter(date__lte=waiting.date).filter(accepted=False)
         data['order'] = len(query)
+        data['time'] = len(query) * restaurant.waiting_avg
+
+#         sms = {
+#         'message': {
+#             'to': '01037065337',
+#             'from': '01077530901',
+#             'text': f'''안녕하세요. VAC STAGE입니다.
+# {waiting.leader} 님이 예약하신 "{ restaurant }" 대기 순서 문자 보내드립니다.
+# { restaurant.waiting_avg}분 뒤 입장 예정이오니, 음식 점 앞에 대기 부탁드립니다.
+# 감사합니다!'''
+#             }
+#         }
+#         res = requests.post(config.getUrl('/messages/v4/send'),
+#                             headers=auth.get_headers(config.apiKey, config.apiSecret), json=data)
+#         print(json.dumps(json.loads(res.text), indent=2, ensure_ascii=False))
+
         return Response(
             data,
             status=status.HTTP_201_CREATED
