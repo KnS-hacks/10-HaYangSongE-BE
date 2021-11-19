@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.shortcuts import render
 
 # Create your views here.
+from django.utils.timezone import utc
 from rest_framework import generics, permissions, filters, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -105,12 +106,21 @@ def accept_waiting(request, restaurant_pk):
         return Response(serializer.data)
     if request.method == 'POST':
         restaurant = Restaurant.objects.get(pk=restaurant_pk)
-        waiting = Waiting.objects.filter(restaurant_id=restaurant_pk)\
-            .filter(accepted=False)\
-            .order_by('date')[0]
-        acceptation = Acceptation.objects.create(
-            waiting=waiting
-        )
+        try:
+            waitings = Waiting.objects.filter(restaurant_id=restaurant_pk)\
+                .filter(accepted=False)\
+                .order_by('date')[0]
+            waiting = waitings[0]
+            acceptation = Acceptation.objects.create(
+                waiting=waiting
+            )
+        except:
+            return Response(
+                {
+                    "success": False,
+                    "msg": "대기중인 인원이 없습니다"
+                }
+            )
         restaurant.acceptation.add(acceptation)
         waiting.accepted = True
         waiting.save()
@@ -145,9 +155,9 @@ def waiting(request):
         waiting.restaurant_id = restaurant_
         waiting.restaurant = restaurant
         waiting.leader = leader
-        waiting.leader_id = leader_
         waiting.accepted = False
         waiting.date = datetime.datetime.utcnow()
+        waiting.save()
         try:
             for member_ in members_:
                 member = Guest.objects.get(username=member_['username'])
@@ -163,6 +173,9 @@ def waiting(request):
                 "success": False,
                 "msg": "멤버 이름이 존재하지 않습니다."
             }, status=status.HTTP_400_BAD_REQUEST)
+        now = datetime.datetime.utcnow().replace(tzinfo=utc).date()
+        query = Waiting.objects.filter(date__lte=waiting.date).filter(accepted=False)
+        data['order'] = len(query)
         return Response(
             data,
             status=status.HTTP_201_CREATED
