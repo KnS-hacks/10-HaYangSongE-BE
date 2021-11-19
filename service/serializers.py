@@ -43,6 +43,7 @@ class GuestLoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=100)
     password = serializers.CharField(max_length=100, write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)
+    success = serializers.BooleanField(default=False)
 
     def validate(self, attrs):
         username = attrs.get("username", None)
@@ -58,10 +59,13 @@ class GuestLoginSerializer(serializers.Serializer):
             jwt_token = JWT_ENCODE_HANDLER(payload)
             update_last_login(None, guest)
         except Guest.DoesNotExist:
-            raise serializers.ValidationError(
-                '회원이 존재하지 않습니다.'
-            )
+            return {
+                'success': False,
+                'username': 'UNKOWN',
+                'token': ''
+            }
         return {
+            'success': True,
             'username': guest.username,
             'token': jwt_token
         }
