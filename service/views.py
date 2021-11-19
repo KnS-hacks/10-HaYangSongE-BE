@@ -100,7 +100,7 @@ def accept_waiting(request, restaurant_pk):
         restaurant = Restaurant.objects.get(pk=restaurant_pk)
         waiting = Waiting.objects.filter(restaurant_id=restaurant_pk)\
             .filter(accepted=False)\
-            .order_by('-date')[0]
+            .order_by('date')[0]
         acceptation = Acceptation.objects.create(
             waiting=waiting
         )
