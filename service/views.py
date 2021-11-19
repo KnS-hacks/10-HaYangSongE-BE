@@ -151,14 +151,14 @@ def waiting(request):
                     return Response({
                         "success": False,
                         "msg": "백신 조건이 맞지않습니다."
-                    })
+                    }, status=status.HTTP_400_BAD_REQUEST)
                 waiting.member.add(member)
             waiting.save()
         except Guest.DoesNotExist:
             return Response({
                 "success": False,
                 "msg": "멤버 이름이 존재하지 않습니다."
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
         return Response(
             data,
             status=status.HTTP_201_CREATED
