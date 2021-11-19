@@ -81,37 +81,37 @@ class WaitingSerializer(serializers.ModelSerializer):
     order = serializers.SerializerMethodField()
     member = MemberSerializer(many=True)
 
-    def create(self, validated_data):
-        restaurant_ = validated_data.pop('restaurant')
-        leader_ = validated_data.pop('leader')
-        leader = Guest.objects.get(username=leader_)
-        members = validated_data.pop('member')
-        if leader.vaccine_step < restaurant_.vaccine_condition:
-            raise serializers.ValidationError(
-                {"message": "백신 조건이 맞지않습니다."}
-            )
-        else:
-            waiting = Waiting()
-            waiting.restaurant_id = restaurant_.pk
-            waiting.leader = leader
-            waiting.accepted = False
-            waiting.date = datetime.datetime.utcnow()
-            waiting.save()
-            try:
-                for member_ in members:
-                    print(member_)
-                    member = Guest.objects.get(username=member_['username'])
-                    if member.vaccine_step < restaurant_.vaccine_condition:
-                        raise serializers.ValidationError(
-                            {"message": "백신 조건이 맞지않습니다."}
-                        )
-                    waiting.member.add(member)
-            except Guest.DoesNotExist:
-                raise serializers.ValidationError(
-                    {"message": '회원이 존재하지 않습니다.'}
-                )
-            restaurant_.waitings.add(waiting)
-            return waiting
+    # def create(self, validated_data):
+    #     restaurant_ = validated_data.pop('restaurant')
+    #     leader_ = validated_data.pop('leader')
+    #     leader = Guest.objects.get(username=leader_)
+    #     members = validated_data.pop('member')
+    #     if leader.vaccine_step < restaurant_.vaccine_condition:
+    #         raise serializers.ValidationError(
+    #             {"message": "백신 조건이 맞지않습니다."}
+    #         )
+    #     else:
+    #         waiting = Waiting()
+    #         waiting.restaurant_id = restaurant_.pk
+    #         waiting.leader = leader
+    #         waiting.accepted = False
+    #         waiting.date = datetime.datetime.utcnow()
+    #         waiting.save()
+    #         try:
+    #             for member_ in members:
+    #                 print(member_)
+    #                 member = Guest.objects.get(username=member_['username'])
+    #                 if member.vaccine_step < restaurant_.vaccine_condition:
+    #                     raise serializers.ValidationError(
+    #                         {"message": "백신 조건이 맞지않습니다."}
+    #                     )
+    #                 waiting.member.add(member)
+    #         except Guest.DoesNotExist:
+    #             raise serializers.ValidationError(
+    #                 {"message": '회원이 존재하지 않습니다.'}
+    #             )
+    #         restaurant_.waitings.add(waiting)
+    #         return waiting
 
     @staticmethod
     def get_order(obj):

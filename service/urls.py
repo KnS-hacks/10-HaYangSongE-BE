@@ -9,7 +9,7 @@ urlpatterns = [
     path('account/restaurant/', views.RestaurantList.as_view()),
     path('account/restaurant/<int:pk>/', views.RestaurantDetail.as_view()),
     path('service/restaurant/waiting/<int:restaurant_pk>/', views.accept_waiting),
-    path('service/waiting/', views.WaitingList.as_view()),
+    path('service/waiting/', views.waiting),
     path('service/waiting/<int:pk>/', views.WaitingDetail.as_view()),
 ]
 

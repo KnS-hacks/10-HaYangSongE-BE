@@ -1,3 +1,5 @@
+import datetime
+
 import requests
 
 from django.db.models import Q
@@ -8,6 +10,7 @@ from rest_framework import generics, permissions, filters, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.http import JsonResponse
 
 # from service.permissions import IsHostOrReadOnly
 from service.models import Guest, Restaurant, Waiting, Acceptation
@@ -115,3 +118,52 @@ def accept_waiting(request, restaurant_pk):
         if serializer.is_valid():
             serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+def waiting(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        waiting = Waiting()
+        restaurant_ = data['restaurant']
+        leader_ = data['leader']
+        members_ = data['member']
+        restaurant = Restaurant.objects.get(id=restaurant_)
+        leader = Guest.objects.get(username=leader_)
+
+        if leader.vaccine_step < restaurant.vaccine_condition:
+            return Response({
+                "success": False,
+                "msg": "백신 조건이 맞지않습니다."
+            })
+
+        waiting.restaurant_id = restaurant_
+        waiting.restaurant = restaurant
+        waiting.leader = leader
+        waiting.leader_id = leader_
+        waiting.accepted = False
+        waiting.date = datetime.datetime.utcnow()
+        try:
+            for member_ in members_:
+                member = Guest.objects.get(username=member_['username'])
+                if member.vaccine_step < restaurant.vaccine_condition:
+                    return Response({
+                        "success": False,
+                        "msg": "백신 조건이 맞지않습니다."
+                    })
+                waiting.member.add(member)
+            waiting.save()
+        except Guest.DoesNotExist:
+            return Response({
+                "success": False,
+                "msg": "멤버 이름이 존재하지 않습니다."
+            })
+        return Response(
+            data,
+            status=status.HTTP_201_CREATED
+        )
+    elif request.method == 'GET':
+        waitings = Waiting.objects.all()
+        serilaizer = WaitingSerializer(waitings, many=True)
+        return JsonResponse(serilaizer.data, safe=False)
