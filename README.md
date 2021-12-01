@@ -68,6 +68,9 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
+## DB 명세서
+![DB 명세서](./res/erdV0.5.drawio.png)
+
 ## API 명세서
 [NOTION](https://www.notion.so/API-2b18be0c61c3464e996b991676b87c82)
 
