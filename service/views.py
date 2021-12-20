@@ -28,7 +28,6 @@ from service.sms.lib.auth import *
 from service.sms.lib.config import *
 
 
-
 class GuestList(generics.ListCreateAPIView):
     queryset = Guest.objects.all()
     serializer_class = GuestSerializer
@@ -124,7 +123,6 @@ def accept_waiting(request, restaurant_pk):
             waiting = Waiting.objects.filter(restaurant_id=restaurant_pk)\
                 .filter(accepted=False)\
                 .order_by('date')[0]
-            print(waiting)
             acceptation = Acceptation.objects.create(
                 waiting=waiting
             )
@@ -138,6 +136,16 @@ def accept_waiting(request, restaurant_pk):
         restaurant.acceptation.add(acceptation)
         waiting.accepted = True
         waiting.save()
+
+        # waiting에 참조된 게스트들의 현재 웨이팅을 비우고
+        # waiting_record로 옮긴다.
+        guest: Guest = waiting.leader
+        guest.waiting_record.add(guest.waiting_current)
+        guest.waiting_current = None
+        for guest in waiting.member.all():
+            guest.waiting_record.add(guest.waiting_current)
+            guest.waiting_current = None
+
         serializer = AcceptationSerializer(data=acceptation)
         if serializer.is_valid():
             serializer.save()
@@ -149,7 +157,7 @@ def accept_waiting(request, restaurant_pk):
             sms = {
                     'message': {
                         'to': leader.phone_number,
-                        'from': '01077530901',
+                        'from': '#',
                         'text': f'안녕하세요. VAC STAGE입니다. \
                         {next_waiting.leader} 님이 예약하신 "{restaurant}" 대기 순서 문자 보내드립니다. {restaurant.waiting_avg}분 뒤 입장 예정이오니, 음식점 앞에 대기 부탁드립니다. 감사합니다!'
                     }
@@ -197,6 +205,11 @@ def waiting(request):
                         "success": False,
                         "msg": "백신 조건이 맞지않습니다."
                     }, status=status.HTTP_400_BAD_REQUEST)
+                if member.waiting_current is not None:
+                    return Response({
+                        "success": False,
+                        "msg": f"{member.username}이 이미 예약 목록을 가지고 있습니다."
+                    }, status=status.HTTP_400_BAD_REQUEST)
                 waiting.member.add(member)
             waiting.save()
         except Guest.DoesNotExist:
@@ -204,6 +217,13 @@ def waiting(request):
                 "success": False,
                 "msg": "멤버 이름이 존재하지 않습니다."
             }, status=status.HTTP_400_BAD_REQUEST)
+
+        # waiting이 valid한지 검사 후 각 유저의 현재 웨이팅 정보를 업데이트
+        for member_ in members_:
+            member = Guest.objects.get(username=member_['username'])
+            member.waiting_current = waiting
+            member.save()
+
         now = datetime.datetime.utcnow().replace(tzinfo=utc).date()
         query = Waiting.objects.filter(date__lte=waiting.date).filter(accepted=False)
         data['order'] = len(query)
