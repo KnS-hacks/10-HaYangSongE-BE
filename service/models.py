@@ -8,6 +8,10 @@ class Guest(AbstractUser):
     vaccine_date = models.DateField(null=True)
     phone_number = models.CharField(max_length=50, default="")
     is_host = models.BooleanField(default=False)
+    waiting_record = models.ManyToManyField('Waiting', related_name='waiting_record',
+                                            default=None, blank=True, null=True)
+    waiting_current = models.OneToOneField('Waiting', on_delete=models.CASCADE,
+                                           related_name='waiting_current', default=None, blank=True, null=True)
 
     def __str__(self):
         return self.username
