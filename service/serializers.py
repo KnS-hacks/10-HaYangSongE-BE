@@ -49,12 +49,20 @@ class GuestLoginSerializer(serializers.Serializer):
         username = attrs.get("username", None)
         password = attrs.get("password", None)
         guest = authenticate(username=username, password=password)
-
         if guest is None:
-            return {
-                'username': None
-            }
+            guests = Guest.objects.filter(username=username)
+            if not len(guests):
+                guest = authenticate(username=username, password=password)
+                return {
+                    'username': None
+                }
+            guest = guests[0]
+            if guest.password != password:
+                return {
+                    'username': None
+                }
         try:
+            jwt_token = self.get_user_token(guest)
             payload = JWT_PAYLOAD_HANDLER(guest)
             jwt_token = JWT_ENCODE_HANDLER(payload)
             update_last_login(None, guest)
@@ -69,6 +77,12 @@ class GuestLoginSerializer(serializers.Serializer):
             'username': guest.username,
             'token': jwt_token
         }
+
+    def get_user_token(self, guest):
+        payload = JWT_PAYLOAD_HANDLER(guest)
+        jwt_token = JWT_ENCODE_HANDLER(payload)
+        update_last_login(None, guest)
+        return jwt_token
 
 
 class MemberSerializer(serializers.ModelSerializer):
