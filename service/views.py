@@ -149,10 +149,10 @@ def accept_waiting(request, restaurant_pk):
         serializer = AcceptationSerializer(data=acceptation)
         if serializer.is_valid():
             serializer.save()
-        next_waiting = Waiting.objects.filter(restaurant_id=restaurant_pk)\
-                .filter(accepted=False)\
-                .order_by('date')[0]
-        if next_waiting:
+        try:
+            next_waiting = Waiting.objects.filter(restaurant_id=restaurant_pk)\
+                    .filter(accepted=False)\
+                    .order_by('date')[0]
             leader = Guest.objects.get(username=next_waiting.leader.username)
             sms = {
                     'message': {
@@ -165,6 +165,12 @@ def accept_waiting(request, restaurant_pk):
             res = requests.post(getUrl('/messages/v4/send'),
                                 headers=get_headers(apiKey, apiSecret), json=sms)
             print(json.dumps(json.loads(res.text), indent=2, ensure_ascii=False))
+        except:
+            return Response(
+                {
+                    "success": False,
+                }, status=status.HTTP_200_OK
+            )
 
         return Response(
             {
@@ -210,7 +216,7 @@ def waiting(request):
                         "success": False,
                         "msg": f"{member.username}이 이미 예약 목록을 가지고 있습니다."
                     }, status=status.HTTP_400_BAD_REQUEST)
-                waiting.member.add(member)
+                waiting.member.add(member.id)
             waiting.save()
         except Guest.DoesNotExist:
             return Response({
@@ -223,12 +229,15 @@ def waiting(request):
             member = Guest.objects.get(username=member_['username'])
             member.waiting_current = waiting
             member.save()
+        waiting.leader.waiting_current = waiting
+        waiting.leader.waiting_current.save()
 
         now = datetime.datetime.utcnow().replace(tzinfo=utc).date()
         query = Waiting.objects.filter(date__lte=waiting.date).filter(accepted=False)
         data['order'] = len(query)
         data['time'] = len(query) * restaurant.waiting_avg
 
+        waiting.save()
         return Response(
             data,
             status=status.HTTP_201_CREATED
