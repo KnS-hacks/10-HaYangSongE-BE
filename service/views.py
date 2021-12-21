@@ -142,9 +142,11 @@ def accept_waiting(request, restaurant_pk):
         guest: Guest = waiting.leader
         guest.waiting_record.add(guest.waiting_current)
         guest.waiting_current = None
+        guest.save()
         for guest in waiting.member.all():
             guest.waiting_record.add(guest.waiting_current)
             guest.waiting_current = None
+            guest.save()
 
         serializer = AcceptationSerializer(data=acceptation)
         if serializer.is_valid():
@@ -168,7 +170,8 @@ def accept_waiting(request, restaurant_pk):
         except:
             return Response(
                 {
-                    "success": False,
+                    "success": True,
+                    "msg": "다음 예약은 없습니다."
                 }, status=status.HTTP_200_OK
             )
 
@@ -188,14 +191,32 @@ def waiting(request):
         restaurant_ = data['restaurant']
         leader_ = data['leader']
         members_ = data['member']
+
         restaurant = Restaurant.objects.get(id=restaurant_)
         leader = Guest.objects.get(username=leader_)
+        members = []
 
-        if leader.vaccine_step < restaurant.vaccine_condition:
+        try:
+            for member_ in members_:
+                members.append(Guest.objects.get(username=member_['username']))
+            members.append(leader)
+        except Guest.DoesNotExist:
             return Response({
                 "success": False,
-                "msg": "백신 조건이 맞지않습니다."
-            })
+                "msg": "멤버 이름이 존재하지 않습니다."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        for member in members:
+            if member.vaccine_step < restaurant.vaccine_condition:
+                return Response({
+                    "success": False,
+                    "msg": "백신 조건이 맞지않습니다."
+                })
+            if member.waiting_current is not None:
+                return Response({
+                    "success": False,
+                    "msg": f"{member.username}이 이미 예약 목록을 가지고 있습니다."
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         waiting.restaurant_id = restaurant_
         waiting.restaurant = restaurant
@@ -203,41 +224,17 @@ def waiting(request):
         waiting.accepted = False
         waiting.date = datetime.datetime.utcnow()
         waiting.save()
-        try:
-            for member_ in members_:
-                member = Guest.objects.get(username=member_['username'])
-                if member.vaccine_step < restaurant.vaccine_condition:
-                    return Response({
-                        "success": False,
-                        "msg": "백신 조건이 맞지않습니다."
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                if member.waiting_current is not None:
-                    return Response({
-                        "success": False,
-                        "msg": f"{member.username}이 이미 예약 목록을 가지고 있습니다."
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                waiting.member.add(member.id)
-            waiting.save()
-        except Guest.DoesNotExist:
-            return Response({
-                "success": False,
-                "msg": "멤버 이름이 존재하지 않습니다."
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        # waiting이 valid한지 검사 후 각 유저의 현재 웨이팅 정보를 업데이트
-        for member_ in members_:
-            member = Guest.objects.get(username=member_['username'])
+        for member in members:
+            waiting.member.add(member.id)
             member.waiting_current = waiting
             member.save()
-        waiting.leader.waiting_current = waiting
-        waiting.leader.waiting_current.save()
+        waiting.save()
 
         now = datetime.datetime.utcnow().replace(tzinfo=utc).date()
         query = Waiting.objects.filter(date__lte=waiting.date).filter(accepted=False)
         data['order'] = len(query)
         data['time'] = len(query) * restaurant.waiting_avg
 
-        waiting.save()
         return Response(
             data,
             status=status.HTTP_201_CREATED
