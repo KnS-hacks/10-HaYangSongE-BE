@@ -117,6 +117,7 @@ def accept_waiting(request, restaurant_pk):
         acceptation = Acceptation.objects.filter(restaurant=restaurant_pk)
         serializer = AcceptationSerializer(acceptation, many=True)
         return Response(serializer.data)
+
     if request.method == 'POST':
         restaurant = Restaurant.objects.get(pk=restaurant_pk)
         try:
@@ -126,7 +127,7 @@ def accept_waiting(request, restaurant_pk):
             acceptation = Acceptation.objects.create(
                 waiting=waiting
             )
-        except:
+        except Waiting.DoesNotExist:
             return Response(
                 {
                     "success": False,
@@ -137,13 +138,8 @@ def accept_waiting(request, restaurant_pk):
         waiting.accepted = True
         waiting.save()
 
-        # waiting에 참조된 게스트들의 현재 웨이팅을 비우고
-        # waiting_record로 옮긴다.
-        guest: Guest = waiting.leader
-        guest.waiting_record.add(guest.waiting_current)
-        guest.waiting_current = None
-        guest.save()
-        for guest in waiting.member.all():
+        members = [guest for guest in waiting.member.all()]
+        for guest in members:
             guest.waiting_record.add(guest.waiting_current)
             guest.waiting_current = None
             guest.save()
@@ -151,6 +147,13 @@ def accept_waiting(request, restaurant_pk):
         serializer = AcceptationSerializer(data=acceptation)
         if serializer.is_valid():
             serializer.save()
+        else:
+            return Response(
+                {
+                    "success": False
+                }, status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
             next_waiting = Waiting.objects.filter(restaurant_id=restaurant_pk)\
                     .filter(accepted=False)\
@@ -174,7 +177,6 @@ def accept_waiting(request, restaurant_pk):
                     "msg": "다음 예약은 없습니다."
                 }, status=status.HTTP_200_OK
             )
-
         return Response(
             {
                 "success": True
