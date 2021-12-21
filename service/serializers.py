@@ -30,7 +30,7 @@ class GuestSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'full_name', 'vaccine_step',
                   'vaccine_elapsed', 'email', 'vaccine_date',
                   'password', 'phone_number',
-                  'is_staff', 'is_host']
+                  'is_staff', 'is_host', 'waiting_current']
 
 
 class GuestLoginSerializer(serializers.Serializer):
