@@ -63,7 +63,7 @@ class RestaurantList(generics.ListCreateAPIView):
         if district is not None:
             queryset = queryset.filter(district=district)
         if key is not None:
-            queryset = queryset.filter(branch_name__contains=key)
+            queryset = queryset.filter(name__contains=key)
         return queryset
 
 
@@ -242,7 +242,7 @@ def waiting(request):
 
 
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['GET', 'DELETE'])
 def user_waiting(request, username):
     if request.method == 'GET':
         data = {
@@ -285,7 +285,45 @@ def user_waiting(request, username):
         data["members"] = members
         data["order"] = order
         data["left_time"] = int(restaurant.waiting_avg * order)
-        data["restaurant"] = str(restaurant)
+        data["restaurant"] = str(restaurant.name)
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )
+
+    if request.method == 'DELETE':
+        data = {
+            "success": False
+        }
+        try:
+            guest: Guest = Guest.objects.get(username=username)
+        except Guest.DoesNotExist:
+            data["msg"] = "존재하지 않는 사용자입니다."
+            return Response(
+                data,
+                status=status.HTTP_200_OK
+            )
+        try:
+            waiting: Waiting = guest.waiting_current
+
+            members = [waiting.leader]
+            for member in waiting.member.all():
+                members.append(member)
+        except:
+            data["msg"] = "멤버 조회 이슈"
+            return Response(
+                data,
+                status=status.HTTP_200_OK
+            )
+        for member in members:
+            member.waiting_current = None
+        data["msg"] = f"waiting - {waiting.id} 가 성공적으로 삭제되었습니다."
+        data["success"] = True
+        waiting.restaurant = None
+        waiting.leader = None
+        waiting.accepted = False
+        waiting.delete()
+
         return Response(
             data,
             status=status.HTTP_200_OK
