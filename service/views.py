@@ -285,7 +285,7 @@ def user_waiting(request, username):
         data["members"] = members
         data["order"] = order
         data["left_time"] = int(restaurant.waiting_avg * order)
-        data["restaurant"] = str(restaurant)
+        data["restaurant"] = str(restaurant.name)
         return Response(
             data,
             status=status.HTTP_200_OK
