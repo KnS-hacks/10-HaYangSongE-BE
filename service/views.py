@@ -138,25 +138,15 @@ def accept_waiting(request, restaurant_pk):
         waiting.accepted = True
         waiting.save()
         members = []
+
         for guest in waiting.member.all():
             members.append(guest)
         members.append(waiting.leader)
         for guest in members:
             guest.waiting_current.save()
             guest.waiting_record.add(guest.waiting_current)
-            guest.waiting_record.save()
             guest.waiting_current = None
             guest.save()
-
-        serializer = AcceptationSerializer(data=acceptation)
-        if serializer.is_valid():
-            serializer.save()
-        else:
-            return Response(
-                {
-                    "success": False
-                }, status=status.HTTP_400_BAD_REQUEST
-            )
 
         try:
             next_waiting = Waiting.objects.filter(restaurant_id=restaurant_pk)\
