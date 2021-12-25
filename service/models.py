@@ -10,7 +10,7 @@ class Guest(AbstractUser):
     is_host = models.BooleanField(default=False)
     waiting_record = models.ManyToManyField('Waiting', related_name='waiting_record',
                                             default=None, blank=True, null=True)
-    waiting_current = models.ForeignKey('Waiting', on_delete=models.CASCADE,
+    waiting_current = models.ForeignKey('Waiting', on_delete=models.SET_NULL,
                                            related_name='waiting_current', default=None, blank=True, null=True)
 
     def __str__(self):
@@ -86,7 +86,7 @@ class Restaurant(models.Model):
 
 class Waiting(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
-    leader = models.ForeignKey(Guest, on_delete=models.CASCADE)
+    leader = models.ForeignKey(Guest, on_delete=models.SET_NULL, null=True)
     member = models.ManyToManyField(Guest, related_name='member')
     accepted = models.BooleanField(default=False)
     date = models.DateTimeField(auto_now=True)
