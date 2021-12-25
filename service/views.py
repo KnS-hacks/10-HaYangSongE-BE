@@ -63,7 +63,7 @@ class RestaurantList(generics.ListCreateAPIView):
         if district is not None:
             queryset = queryset.filter(district=district)
         if key is not None:
-            queryset = queryset.filter(branch_name__contains=key)
+            queryset = queryset.filter(name__contains=key)
         return queryset
 
 
