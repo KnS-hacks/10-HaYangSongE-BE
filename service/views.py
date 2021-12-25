@@ -127,7 +127,7 @@ def accept_waiting(request, restaurant_pk):
             acceptation = Acceptation.objects.create(
                 waiting=waiting
             )
-        except Waiting.DoesNotExist:
+        except:
             return Response(
                 {
                     "success": False,
