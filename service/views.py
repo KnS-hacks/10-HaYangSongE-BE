@@ -239,3 +239,54 @@ def waiting(request):
         waitings = Waiting.objects.all()
         serilaizer = WaitingSerializer(waitings, many=True)
         return JsonResponse(serilaizer.data, safe=False)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def user_waiting(request, username):
+    if request.method == 'GET':
+        data = {
+            "success": False
+        }
+        try:
+            guest: Guest = Guest.objects.get(username=username)
+        except Guest.DoesNotExist:
+            data["msg"] = "존재하지 않는 사용자입니다."
+            return Response(
+                data,
+                status=status.HTTP_200_OK
+            )
+        try:
+            waiting: Waiting = guest.waiting_current
+            now = datetime.datetime.utcnow().replace(tzinfo=utc).date()
+            query = Waiting.objects.filter(date__lte=waiting.date).filter(accepted=False)
+
+            order = len(query)
+            members = [str(waiting.leader)]
+            for member in waiting.member.all():
+                members.append(str(member.username))
+        except:
+            data["msg"] = "멤버 조회 이슈"
+            return Response(
+                data,
+                status=status.HTTP_200_OK
+            )
+        try:
+            pk = waiting.restaurant.pk
+            restaurant_ = waiting.restaurant.name
+            restaurant = Restaurant.objects.get(pk=pk)
+        except:
+            data["msg"] = "식당 조회 이슈"
+            return Response(
+                data,
+                status=status.HTTP_200_OK
+            )
+        data["success"] = True
+        data["members"] = members
+        data["order"] = order
+        data["left_time"] = int(restaurant.waiting_avg * order)
+        data["restaurant"] = str(restaurant)
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )
