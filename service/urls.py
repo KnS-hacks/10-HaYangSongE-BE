@@ -4,6 +4,7 @@ from service import views
 urlpatterns = [
     path('account/login/', views.login),
     path('account/guest/', views.GuestList.as_view()),
+    path('account/guest/waiting/<str:username>/', views.user_waiting),
     path('account/guest/<int:pk>/', views.GuestDetailPK.as_view()),
     path('account/guest/<str:username>/', views.GuestDetailUN.as_view()),
     path('account/restaurant/', views.RestaurantList.as_view()),
