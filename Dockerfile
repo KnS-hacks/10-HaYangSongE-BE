@@ -14,9 +14,9 @@ RUN apk update
 RUN  apk add postgresql-dev gcc python3-dev musl-dev zlib-dev jpeg-dev #--(5.2)
 RUN  apk add --no-cache python3-dev libffi-dev gcc && pip3 install --upgrade pip
 RUN  apk add gcc musl-dev python3-dev libffi-dev openssl-dev
-RUN mv ./chomeDriver/chromeProd/chromedriver /usr/local/bin
 
 COPY . /usr/src/app/
+RUN mv ./chomeDriver/chromeProd/chromedriver /usr/local/bin
 # install dependencies
 RUN pip install --upgrade pip
 RUN python3 -m pip install --upgrade pip setuptools wheel
