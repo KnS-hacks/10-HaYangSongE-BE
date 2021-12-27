@@ -26,6 +26,10 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.prod.db
+  selenium:
+    image: selenium/standalone-firefox
+    ports:
+    - 4444:4444
 volumes:
   postgres_data:
   media_volume:
