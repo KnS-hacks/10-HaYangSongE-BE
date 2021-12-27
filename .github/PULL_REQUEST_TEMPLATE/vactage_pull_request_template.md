@@ -1,5 +1,0 @@
-## Title
->
-## Details
-- [ ]
-## Caution
