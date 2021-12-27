@@ -328,3 +328,16 @@ def user_waiting(request, username):
             data,
             status=status.HTTP_200_OK
         )
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes(['IsAdminUser'])
+def get_restaurants(request):
+    if request.method == 'POST':
+        crawling()
+        pass
+
+
+def crawling():
+    pass
