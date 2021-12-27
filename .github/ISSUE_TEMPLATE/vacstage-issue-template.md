@@ -7,8 +7,8 @@ assignees: ''
 
 ---
 
-## 목적
+## Purpose
 >
-## 작업 상세 내용
+## Details
 - [ ]
-## 참고
+## Reference
