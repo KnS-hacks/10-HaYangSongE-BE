@@ -157,3 +157,4 @@ vacstage/lib/
 vacstage/pyvenv.cfg
 /account/migrations/
 /service/migrations/
+/template.txt
