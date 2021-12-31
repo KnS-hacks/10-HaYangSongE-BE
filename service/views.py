@@ -330,7 +330,6 @@ def user_waiting(request, username):
         )
 
 
-@csrf_exempt
 @api_view(["GET"])
 def district_rate(request):
     def get_SE():
@@ -374,3 +373,15 @@ def district_rate(request):
             data,
             status=status.HTTP_200_OK
         )
+
+
+@api_view(['POST'])
+@permission_classes(['IsAdminUser'])
+def get_restaurants(request):
+    if request.method == 'POST':
+        crawling()
+        pass
+
+
+def crawling():
+    pass

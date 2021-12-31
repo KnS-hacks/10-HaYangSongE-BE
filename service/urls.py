@@ -9,6 +9,7 @@ urlpatterns = [
     path('account/guest/<int:pk>', views.GuestDetailPK.as_view()),
     path('account/guest/<str:username>', views.GuestDetailUN.as_view()),
     path('account/restaurant', views.RestaurantList.as_view()),
+    path('account/restaurant/create', views.get_restaurants),
     path('account/restaurant/<int:pk>', views.RestaurantDetail.as_view()),
     path('service/restaurant/waiting/<int:restaurant_pk>', views.accept_waiting),
     path('service/waiting', views.waiting),
