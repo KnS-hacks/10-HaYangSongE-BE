@@ -122,31 +122,12 @@ class AcceptationSerializer(serializers.ModelSerializer):
 class RestaurantSerializer(serializers.ModelSerializer):
     waitings = WaitingSerializer(many=True, read_only=True)
     acceptation = AcceptationSerializer(many=True, read_only=True)
-    SE = serializers.SerializerMethodField()
-    WN = serializers.SerializerMethodField()
-
-    def get_SE(self, obj):
-        parent = child = 0
-        restaurants = Restaurant.objects.filter(district='SE')
-        for restaurant in restaurants:
-            parent += restaurant.total_seat
-            child += (restaurant.total_seat - restaurant.remain_seat)
-        return 0 if not parent else int(child * 100 / parent)
-
-    def get_WN(self, obj):
-        parent = child = 0
-        restaurants = Restaurant.objects.filter(district='WN')
-        for restaurant in restaurants:
-            parent += restaurant.total_seat
-            child += (restaurant.total_seat - restaurant.remain_seat)
-        return 0 if not parent else int(child * 100 / parent)
-
 
     class Meta:
         model = Restaurant
         fields = ['id', 'name', 'host', 'phone_number', 'branch_name', 'district', 'area',
                   'waiting_avg', 'total_seat', 'remain_seat', 'menu', 'restaurant_photo',
-                  'waitings', 'acceptation', 'vaccine_condition', 'SE', 'WN']
+                  'waitings', 'acceptation', 'vaccine_condition']
 
     def create(self, validated_data):
         return Restaurant.objects.create(**validated_data)

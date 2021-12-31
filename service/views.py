@@ -337,7 +337,51 @@ def user_waiting(request, username):
         )
 
 
-@csrf_exempt
+@api_view(["GET"])
+def district_rate(request):
+    def get_SE():
+        parent = child = 0
+        restaurants = Restaurant.objects.filter(district='SE')
+        rate = 0
+        for restaurant in restaurants:
+            parent += restaurant.total_seat
+            child += (restaurant.total_seat - restaurant.remain_seat)
+        try:
+            rate = int(child * 100 / parent)
+            return rate
+        except ZeroDivisionError:
+            rate = 0
+            return rate
+        finally:
+            return rate
+
+    def get_WN():
+        parent = child = 0
+        restaurants = Restaurant.objects.filter(district='WN')
+        rate = 0
+        for restaurant in restaurants:
+            parent += restaurant.total_seat
+            child += (restaurant.total_seat - restaurant.remain_seat)
+        try:
+            rate = int(child * 100 / parent)
+            return rate
+        except ZeroDivisionError:
+            rate = 0
+            return rate
+        finally:
+            return rate
+
+    if request.method == 'GET':
+        data = {
+            "SE": get_SE(),
+            "WN": get_WN()
+        }
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )
+
+
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
 def get_restaurants(request):
