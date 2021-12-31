@@ -397,30 +397,26 @@ def crawling():
     soup = BeautifulSoup(html, 'html.parser')
 
     chrome_options = Options()
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--no-sandbox")
+    # chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(options=chrome_options)
 
-    driver.get("https://map.naver.com/")
-    driver.find_element_by_css_selector("div.input_box>input.input_search")\
-        .send_keys("천안 식당")
-    driver.find_element_by_css_selector('#header button[type="submit"]').click()
-    address = []
-    while True:
+    driver.get("https://map.naver.com/v5/search")
+    time.sleep(3)
+    search_box = driver.find_element_by_css_selector("div.input_box>input.input_search")
+    search_box.send_keys("천안 식당")
+    search_box.send_keys(Keys.ENTER)
+    restaurants = []
+    driver.implicitly_wait(7)
+    driver.switch_to.frame("searchIframe")
+    for i in range(10):
         html = driver.page_source
-        soup = BeautifulSoup(html, "html.parser")
-        add = soup.select(".lsnx_det .addr")
-        name = soup.select(".lsnx_det a")
-        add = " ".join(str(x) for x in add)
-        soup = BeautifulSoup(add, "lxml")
-        a = soup.text
-        a = a.replace("지번", "\t")
-        a = a.split("\t")
-        address.append(a)
-
+        soup = BeautifulSoup(html, 'html.parser')
+        soup = soup.find("ul").find_all("li")
+        for s in soup:
+            restaurants.append(s)
         try:
-            driver.find_element_by_css_selector(".paginate strong+a").click()
+            print(driver.find_element_by_css_selector("._3Dl4U").text)
+            driver.find_element_by_css_selector("._3Dl4U").click()
         except:
             break
-    print(address)
-
