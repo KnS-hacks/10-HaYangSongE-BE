@@ -2,6 +2,7 @@ from django.urls import path
 from service import views
 
 urlpatterns = [
+    path('account/ditrict', views.district_rate),
     path('account/login', views.login),
     path('account/guest', views.GuestList.as_view()),
     path('account/guest/waiting/<str:username>', views.user_waiting),
