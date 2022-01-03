@@ -143,7 +143,6 @@ def accept_waiting(request, restaurant_pk):
             members.append(guest)
         members.append(waiting.leader)
         for guest in members:
-            guest.waiting_current.save()
             guest.waiting_record.add(guest.waiting_current)
             guest.waiting_current = None
             guest.save()
