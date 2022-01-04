@@ -155,8 +155,6 @@ REST_FRAMEWORK = {
     ]
 }
 
-CORS_ORIGIN_ALLOW_ALL = True
-
 
 JWT_AUTH = {
     'JWT_ENCODE_HANDLER':
