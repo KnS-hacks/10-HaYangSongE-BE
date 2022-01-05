@@ -158,3 +158,6 @@ vacstage/pyvenv.cfg
 /account/migrations/
 /service/migrations/
 /template.txt
+
+/*/.DS_Store
+/*/*/.DS_Store

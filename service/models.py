@@ -9,7 +9,7 @@ class Guest(AbstractUser):
     phone_number = models.CharField(max_length=50, default="")
     is_host = models.BooleanField(default=False)
     waiting_record = models.ManyToManyField('Waiting', related_name='waiting_record',
-                                            default=None, blank=True, null=True)
+                                            default=None, blank=True)
     waiting_current = models.ForeignKey('Waiting', on_delete=models.SET_NULL,
                                            related_name='waiting_current', default=None, blank=True, null=True)
 
@@ -25,6 +25,11 @@ class Review(models.Model):
 class Acceptation(models.Model):
     admission_date = models.DateTimeField(auto_now=True)
     waiting = models.ForeignKey('Waiting', on_delete=models.CASCADE)
+
+
+class Menu(models.Model):
+    name = models.CharField(max_length=255)
+    price = models.PositiveIntegerField()
 
 
 class Restaurant(models.Model):
@@ -70,7 +75,7 @@ class Restaurant(models.Model):
     district = models.CharField(max_length=2, choices=DISTRICTS)
     area = models.CharField(max_length=2, choices=AREA)
     waiting_avg = models.IntegerField()
-    menu = models.ImageField(upload_to=f'menu/%Y/%m/%d/', blank=True, null=True)
+    menu = models.ManyToManyField(Menu)
     restaurant_photo = models.ImageField(upload_to='restaurant/%Y/%m/%d/', blank=True)
     is_host = models.BooleanField(default=False)
     acceptation = models.ManyToManyField(Acceptation, blank=True)

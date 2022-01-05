@@ -5,7 +5,7 @@ from django.utils.timezone import utc
 from rest_framework import serializers
 from rest_framework_jwt.settings import api_settings
 
-from service.models import Guest, Waiting, Restaurant, Acceptation
+from service.models import Guest, Waiting, Restaurant, Acceptation, Menu
 from django.contrib.auth import authenticate
 
 JWT_PAYLOAD_HANDLER = api_settings.JWT_PAYLOAD_HANDLER
@@ -119,9 +119,16 @@ class AcceptationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class MenuSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Menu
+        fields = '__all__'
+
+
 class RestaurantSerializer(serializers.ModelSerializer):
     waitings = WaitingSerializer(many=True, read_only=True)
     acceptation = AcceptationSerializer(many=True, read_only=True)
+    menu = MenuSerializer(many=True)
 
     class Meta:
         model = Restaurant
@@ -130,4 +137,11 @@ class RestaurantSerializer(serializers.ModelSerializer):
                   'waitings', 'acceptation', 'vaccine_condition']
 
     def create(self, validated_data):
-        return Restaurant.objects.create(**validated_data)
+        menu_data = validated_data.pop('menu')
+        print(menu_data)
+        restaurant = Restaurant.objects.create(**validated_data)
+        for menu in menu_data:
+            new_menu = Menu.objects.create(**menu)
+            restaurant.menu.add(new_menu)
+        return restaurant
+
