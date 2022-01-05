@@ -3,6 +3,13 @@ import json
 import sys
 import os.path
 
+import urllib.request
+from bs4 import BeautifulSoup
+import ssl
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
+
 import requests
 
 from django.db.models import Q
@@ -12,7 +19,7 @@ from django.shortcuts import render
 from django.utils.timezone import utc
 from rest_framework import generics, permissions, filters, status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from django.http import JsonResponse
 
@@ -375,12 +382,40 @@ def district_rate(request):
 
 
 @api_view(['POST'])
-@permission_classes(['IsAdminUser'])
+@permission_classes([IsAdminUser])
 def get_restaurants(request):
     if request.method == 'POST':
         crawling()
-        pass
+        return Response({}, status=status.HTTP_200_OK)
 
 
 def crawling():
-    pass
+    context = ssl._create_unverified_context()
+    url = 'https://map.naver.com/v5/search/%EC%B2%9C%EC%95%88%EC%8B%9D%EB%8B%B9?c=14151309.0723597,4415399.6084296,15,0,0,0,dh'
+    html = urllib.request.urlopen(url, context=context).read()
+    soup = BeautifulSoup(html, 'html.parser')
+
+    chrome_options = Options()
+    # chrome_options.add_argument("--no-sandbox")
+    # chrome_options.add_argument("--headless")
+    driver = webdriver.Chrome(options=chrome_options)
+
+    driver.get("https://map.naver.com/v5/search")
+    time.sleep(3)
+    search_box = driver.find_element_by_css_selector("div.input_box>input.input_search")
+    search_box.send_keys("천안 식당")
+    search_box.send_keys(Keys.ENTER)
+    restaurants = []
+    driver.implicitly_wait(7)
+    driver.switch_to.frame("searchIframe")
+    for i in range(10):
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        soup = soup.find("ul").find_all("li")
+        for s in soup:
+            restaurants.append(s)
+        try:
+            print(driver.find_element_by_css_selector("._3Dl4U").text)
+            driver.find_element_by_css_selector("._3Dl4U").click()
+        except:
+            break
