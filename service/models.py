@@ -75,7 +75,7 @@ class Restaurant(models.Model):
     district = models.CharField(max_length=2, choices=DISTRICTS)
     area = models.CharField(max_length=2, choices=AREA)
     waiting_avg = models.IntegerField()
-    menu = models.ForeignKey(Menu, on_delete=models.SET_NULL, null=True)
+    menu = models.ManyToManyField(Menu)
     restaurant_photo = models.ImageField(upload_to='restaurant/%Y/%m/%d/', blank=True)
     is_host = models.BooleanField(default=False)
     acceptation = models.ManyToManyField(Acceptation, blank=True)
