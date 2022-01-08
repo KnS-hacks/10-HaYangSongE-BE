@@ -4,11 +4,15 @@ import sys
 import os.path
 
 import urllib.request
+import re
+
 from bs4 import BeautifulSoup
 import ssl
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import ElementNotInteractableException
+from selenium.common.exceptions import NoSuchElementException
 
 import requests
 
@@ -391,32 +395,90 @@ def get_restaurants(request):
 
 
 def crawling():
-    context = ssl._create_unverified_context()
-    url = 'https://map.naver.com/v5/search/%EC%B2%9C%EC%95%88%EC%8B%9D%EB%8B%B9?c=14151309.0723597,4415399.6084296,15,0,0,0,dh'
-    html = urllib.request.urlopen(url, context=context).read()
-    soup = BeautifulSoup(html, 'html.parser')
 
     chrome_options = Options()
     # chrome_options.add_argument("--no-sandbox")
     # chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(options=chrome_options)
 
-    driver.get("https://map.naver.com/v5/search")
-    time.sleep(3)
-    search_box = driver.find_element_by_css_selector("div.input_box>input.input_search")
-    search_box.send_keys("천안 식당")
-    search_box.send_keys(Keys.ENTER)
-    restaurants = []
-    driver.implicitly_wait(7)
-    driver.switch_to.frame("searchIframe")
-    for i in range(10):
-        html = driver.page_source
-        soup = BeautifulSoup(html, 'html.parser')
-        soup = soup.find("ul").find_all("li")
-        for s in soup:
-            restaurants.append(s)
-        try:
-            print(driver.find_element_by_css_selector("._3Dl4U").text)
-            driver.find_element_by_css_selector("._3Dl4U").click()
-        except:
-            break
+    driver.get("https://map.kakao.com/")
+    search_area = driver.find_element_by_css_selector('#search\.keyword\.query')
+    search_area.send_keys("천안 식당")
+    driver.find_element_by_css_selector('#search\.keyword\.submit').send_keys(Keys.ENTER)
+    driver.implicitly_wait(3)
+    more_page = driver.find_element_by_id("info.search.place.more")
+    more_page.send_keys(Keys.ENTER)
+    time.sleep(1)
+
+    next_btn = driver.find_element_by_id("info.search.page.next")
+    has_next = "disabled" not in next_btn.get_attribute("class").split(" ")
+    page = 1
+
+    while has_next and page <= 7:
+        time.sleep(1)
+        page_links = driver.find_elements_by_css_selector("#info\.search\.page a")
+        pages = [link for link in page_links if "HIDDEN" not in link.get_attribute("class").split(" ")]
+        for i in range(1, 6):
+            selector = f'#info\.search\.page\.no{i}'
+            try:
+                page = driver.find_element_by_css_selector(selector)
+                page.send_keys(Keys.ENTER)
+            except ElementNotInteractableException:
+                break
+            time.sleep(3)
+            place_lists = driver.find_elements_by_css_selector('#info\.search\.place\.list > li')
+            for p in place_lists:
+                try:
+                    detail = p.find_element_by_css_selector('div.info_item > div.contact > a.moreview')
+                except NoSuchElementException:
+                    print("Promotion")
+                    continue
+                detail.send_keys(Keys.ENTER)
+
+                driver.switch_to.window(driver.window_handles[-1])
+                time.sleep(3)
+                try:
+                    store = BeautifulSoup(driver.page_source, 'html.parser')
+                except IndexError:
+                    store = ""
+                try:
+                    name = store.select('.tit_location')[0].text
+                except IndexError:
+                    name = ""
+                try:
+                    address = store.select('.txt_address')[0].text
+                except IndexError:
+                    address = ""
+                try:
+                    tel = store.select('.txt_contact')[0].text
+                except IndexError:
+                    tel = ""
+                menus = store.select('.list_menu')[0].find_all("li")
+                district = 'SE' if address.split()[2] == '동남구' else 'WN'
+                detail_address = ' '.join(address.split()[3:-1])
+                for idx, menu in enumerate(menus):
+                    try:
+                        menu_name = menu.select('.loss_word')[0].text
+                    except Exception:
+                        menu_name = ""
+                    try:
+                        menu_price = menu.select('.price_menu')[0].text
+                        menu_price = int(''.join(menu_price.split()[1].split(',')))
+                    except Exception:
+                        menu_price = 0
+                    print(menu_name, menu_price)
+                place_photo = ""
+                try:
+                    photo = driver.find_element_by_css_selector('span.bg_present')
+                    photo_url = photo.get_attribute('style')
+                    m = re.search('"(.+?)"', photo_url)
+                    if m:
+                        place_photo = m.group(1)
+                    else:
+                        place_photo = ""
+                except:
+                    place_photo = ""
+                print(place_photo)
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+        page += 1
