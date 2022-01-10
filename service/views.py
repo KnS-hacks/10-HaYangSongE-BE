@@ -2,22 +2,32 @@ import datetime
 import json
 import sys
 import os.path
+import tempfile
 
 import urllib.request
 import re
+from random import random, randrange
 
+import files as files
 from bs4 import BeautifulSoup
 import ssl
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import ElementNotInteractableException
+from selenium.common.exceptions import ElementNotInteractableException, StaleElementReferenceException
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.common.by import By
+
+
+
 
 import requests
 
 from django.db.models import Q
 from django.shortcuts import render
+from django.db import transaction
 
 # Create your views here.
 from django.utils.timezone import utc
@@ -28,7 +38,7 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 
 # from service.permissions import IsHostOrReadOnly
-from service.models import Guest, Restaurant, Waiting, Acceptation
+from service.models import Guest, Restaurant, Waiting, Acceptation, Menu
 from service.serializers import GuestSerializer, RestaurantSerializer, WaitingSerializer
 from service.serializers import AcceptationSerializer, GuestLoginSerializer
 from django.views.decorators.csrf import csrf_exempt
@@ -412,9 +422,10 @@ def crawling():
 
     next_btn = driver.find_element_by_id("info.search.page.next")
     has_next = "disabled" not in next_btn.get_attribute("class").split(" ")
-    page = 1
+    current_page = 1
+    rest_cnt = 1
 
-    while has_next and page <= 7:
+    while has_next:
         time.sleep(1)
         page_links = driver.find_elements_by_css_selector("#info\.search\.page a")
         pages = [link for link in page_links if "HIDDEN" not in link.get_attribute("class").split(" ")]
@@ -425,15 +436,19 @@ def crawling():
                 page.send_keys(Keys.ENTER)
             except ElementNotInteractableException:
                 break
-            time.sleep(3)
+            time.sleep(4)
             place_lists = driver.find_elements_by_css_selector('#info\.search\.place\.list > li')
             for p in place_lists:
+                if rest_cnt > 100:
+                    return rest_cnt
                 try:
                     detail = p.find_element_by_css_selector('div.info_item > div.contact > a.moreview')
                 except NoSuchElementException:
                     print("Promotion")
                     continue
                 detail.send_keys(Keys.ENTER)
+                driver.switch_to.window(driver.window_handles[-1])
+                driver.implicitly_wait(3)
 
                 driver.switch_to.window(driver.window_handles[-1])
                 time.sleep(3)
@@ -453,9 +468,38 @@ def crawling():
                     tel = store.select('.txt_contact')[0].text
                 except IndexError:
                     tel = ""
-                menus = store.select('.list_menu')[0].find_all("li")
+                try:
+                    menus = store.select('.list_menu')[0].find_all("li")
+                except:
+                    menus = []
                 district = 'SE' if address.split()[2] == '동남구' else 'WN'
                 detail_address = ' '.join(address.split()[3:-1])
+
+                user = Guest(
+                    password=1234,
+                    is_host=True,
+                    email="1@1.com",
+                    full_name=f'restaurant{rest_cnt}',
+                    username=f'restaurants{rest_cnt}{datetime.datetime.today().isoformat()}',
+                    vaccine_step=randrange(0, 3),
+                )
+
+                user.save()
+                restaurant = Restaurant(
+                    name=name,
+                    host_id=user.id,
+                    phone_number=tel,
+                    branch_name="",
+                    district=district,
+                    detail_address=detail_address,
+                    total_seat=randrange(20, 41),
+                    remain_seat=randrange(10, 21),
+                    waiting_avg=randrange(3, 11),
+                    restaurant_photo=None,
+                    vaccine_condition=randrange(0, 3)
+                )
+                restaurant.save()
+
                 for idx, menu in enumerate(menus):
                     try:
                         menu_name = menu.select('.loss_word')[0].text
@@ -466,19 +510,45 @@ def crawling():
                         menu_price = int(''.join(menu_price.split()[1].split(',')))
                     except Exception:
                         menu_price = 0
+                    menu = Menu(name=menu_name, price=menu_price)
+                    menu.save()
+                    restaurant.menu.add(menu)
                     print(menu_name, menu_price)
-                place_photo = ""
+
+                place_photo_dir = f"restaurant/{restaurant.pk}/"
+                place_photo = place_photo_dir + f"{restaurant.name}.jpeg"
                 try:
-                    photo = driver.find_element_by_css_selector('span.bg_present')
-                    photo_url = photo.get_attribute('style')
-                    m = re.search('"(.+?)"', photo_url)
-                    if m:
-                        place_photo = m.group(1)
-                    else:
-                        place_photo = ""
-                except:
-                    place_photo = ""
+                    photo_tag = driver.find_element_by_css_selector('span.bg_present')
+                    photo_url = photo_tag.get_attribute('style')
+                    photo_url_regex = re.search('"(.+?)"', photo_url)
+                    if photo_url_regex:
+                        photo_url_regex = photo_url_regex.group(1)
+                    full_photo_url = parseURL(photo_url_regex)
+                    if not os.path.isdir("media/" + place_photo_dir):
+                        os.mkdir("media/" + place_photo_dir)
+                    urllib.request.urlretrieve(full_photo_url, "media/" + place_photo)
+                except Exception:
+                    place_photo = None
+                finally:
+                    restaurant.restaurant_photo = place_photo
+                    restaurant.save()
+
                 print(place_photo)
+                rest_cnt += 1
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
-        page += 1
+        next_btn = driver.find_element_by_id("info.search.page.next")
+        has_next = "disabled" not in next_btn.get_attribute("class").split(" ")
+        if not has_next:
+            driver.close()
+            break
+        else:
+            current_page += 1
+            next_btn.send_keys(Keys.ENTER)
+
+
+
+def parseURL(url: str):
+    replace = url.replace("%3F", "?")
+    replace = replace.replace("%25", "%")
+    return "http:" + replace
