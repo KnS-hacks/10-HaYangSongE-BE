@@ -1,35 +1,19 @@
-import datetime
 import json
-import sys
 import os.path
-import tempfile
 
 import urllib.request
 import re
-from random import random, randrange
+from random import randrange
 
-import files as files
 from bs4 import BeautifulSoup
-import ssl
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import ElementNotInteractableException, StaleElementReferenceException
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.common.by import By
-
-
-
 
 import requests
 
-from django.db.models import Q
-from django.shortcuts import render
-from django.db import transaction
-
-# Create your views here.
 from django.utils.timezone import utc
 from rest_framework import generics, permissions, filters, status
 from rest_framework.decorators import api_view, permission_classes
@@ -37,7 +21,7 @@ from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from django.http import JsonResponse
 
-# from service.permissions import IsHostOrReadOnly
+from service.permissions import IsHostOrReadOnly
 from service.models import Guest, Restaurant, Waiting, Acceptation, Menu
 from service.serializers import GuestSerializer, RestaurantSerializer, WaitingSerializer
 from service.serializers import AcceptationSerializer, GuestLoginSerializer
@@ -406,8 +390,8 @@ def get_restaurants(request):
 def crawling():
 
     chrome_options = Options()
-    # chrome_options.add_argument("--no-sandbox")
-    # chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(options=chrome_options)
 
     driver.get("https://map.kakao.com/")
@@ -544,7 +528,6 @@ def crawling():
         else:
             current_page += 1
             next_btn.send_keys(Keys.ENTER)
-
 
 
 def parseURL(url: str):
