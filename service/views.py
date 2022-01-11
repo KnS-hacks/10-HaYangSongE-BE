@@ -65,10 +65,13 @@ class RestaurantList(generics.ListCreateAPIView):
         queryset = Restaurant.objects.all()
         district = self.request.query_params.get('district', None)
         key = self.request.query_params.get('key', None)
+        host = self.request.query_params.get('host', None)
         if district is not None:
             queryset = queryset.filter(district=district)
         if key is not None:
             queryset = queryset.filter(name__contains=key)
+        if host is not None:
+            queryset = queryset.filter(host_id=host)
         return queryset
 
 
